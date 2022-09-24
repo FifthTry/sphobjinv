@@ -1,0 +1,3 @@
+[workspace]
+members = ["sphinx-object-inv", "sphinx-object-inv-cli"]
+
