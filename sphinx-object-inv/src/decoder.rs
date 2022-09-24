@@ -1,8 +1,8 @@
-impl sphinx_object_inv::SphinxObjectInv {
+impl sphinx_object_inv::Data {
     // https://sphobjinv.readthedocs.io/en/latest/syntax.html
     pub fn from(
         r: &mut impl std::io::BufRead,
-    ) -> sphinx_object_inv::Result<sphinx_object_inv::SphinxObjectInv> {
+    ) -> sphinx_object_inv::Result<sphinx_object_inv::Data> {
         let mut buf = String::with_capacity(1024);
 
         // "The first line must be exactly"
@@ -13,7 +13,7 @@ impl sphinx_object_inv::SphinxObjectInv {
             });
         }
 
-        Ok(sphinx_object_inv::SphinxObjectInv {
+        Ok(sphinx_object_inv::Data {
             // "The second and third lines must obey the template"
             project: read_header("# Project", &mut buf, r)?,
             version: read_header("# Version", &mut buf, r)?,
@@ -25,7 +25,7 @@ impl sphinx_object_inv::SphinxObjectInv {
 fn read_entries(
     buf: &mut String,
     r: &mut impl std::io::BufRead,
-) -> sphinx_object_inv::Result<Vec<sphinx_object_inv::SphinxObjectInvEntry>> {
+) -> sphinx_object_inv::Result<Vec<sphinx_object_inv::Entry>> {
     use std::io::BufRead;
 
     buf.clear();
@@ -47,7 +47,7 @@ fn read_entries(
     Ok(o)
 }
 
-fn read_entry(s: &str) -> sphinx_object_inv::Result<sphinx_object_inv::SphinxObjectInvEntry> {
+fn read_entry(s: &str) -> sphinx_object_inv::Result<sphinx_object_inv::Entry> {
     lazy_static::lazy_static! {
         // https://github.com/bskinn/sphobjinv/blob/7d21f634/src/sphobjinv/re.py#L67
         static ref RE: regex::Regex = regex::Regex::new(
@@ -78,12 +78,20 @@ fn read_entry(s: &str) -> sphinx_object_inv::Result<sphinx_object_inv::SphinxObj
             });
         }
     };
-    Ok(sphinx_object_inv::SphinxObjectInvEntry {
+    Ok(sphinx_object_inv::Entry {
         name: caps["name"].to_string(),
         domain: caps["domain"].to_string(),
         role: caps["role"].to_string(),
-        uri: caps["uri"].to_string(),
-        dispname: caps["dispname"].to_string(),
+        uri: if caps["uri"].ends_with("$") {
+            caps["uri"].replace("$", &caps["name"])
+        } else {
+            caps["uri"].to_string()
+        },
+        dispname: if &caps["dispname"] == "-" {
+            caps["name"].to_string()
+        } else {
+            caps["dispname"].to_string()
+        },
         priority: match caps["priority"].parse() {
             Ok(v) => v,
             Err(e) => {

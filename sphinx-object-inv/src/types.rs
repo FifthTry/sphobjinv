@@ -1,12 +1,12 @@
 #[derive(Debug)]
-pub struct SphinxObjectInv {
+pub struct Data {
     pub project: String,
     pub version: String,
-    pub entries: Vec<SphinxObjectInvEntry>,
+    pub entries: Vec<Entry>,
 }
 
 #[derive(Debug)]
-pub struct SphinxObjectInvEntry {
+pub struct Entry {
     pub name: String,
     pub domain: String,
     pub role: String,

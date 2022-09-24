@@ -2,7 +2,6 @@
 fn main() {
     println!(
         "{:?}",
-        sphinx_object_inv::SphinxObjectInv::from(&mut std::io::BufReader::new(std::io::stdin()))
-            .unwrap()
+        sphinx_object_inv::Data::from(&mut std::io::BufReader::new(std::io::stdin())).unwrap()
     );
 }
