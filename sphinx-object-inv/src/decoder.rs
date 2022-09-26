@@ -48,9 +48,9 @@ fn read_entries(
 }
 
 fn read_entry(s: &str) -> sphinx_object_inv::Result<sphinx_object_inv::Entry> {
-    lazy_static::lazy_static! {
-        // https://github.com/bskinn/sphobjinv/blob/7d21f634/src/sphobjinv/re.py#L67
-        static ref RE: regex::Regex = regex::Regex::new(
+    // https://github.com/bskinn/sphobjinv/blob/7d21f634/src/sphobjinv/re.py#L67
+    static RE: once_cell::sync::Lazy<regex::Regex> = once_cell::sync::Lazy::new(|| {
+        regex::Regex::new(
             r#"(?x)
             ^                               # Start of line
             (?P<name>.+?)                   # --> Name
@@ -66,9 +66,10 @@ fn read_entry(s: &str) -> sphinx_object_inv::Result<sphinx_object_inv::Entry> {
             (?P<dispname>.+?)               # --> Display name, lazy b/c possible CR
             \r?$                            # Ignore possible CR at EOL
 
-        "#)
-        .unwrap();
-    }
+        "#,
+        )
+        .unwrap()
+    });
 
     let caps = match RE.captures(s) {
         Some(v) => v,
